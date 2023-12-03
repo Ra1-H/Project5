@@ -1,11 +1,431 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" />
+    <script src="https://kit.fontawesome.com/96bf16ca2d.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <title>notes</title>
 </head>
+
 <body>
-    <div></div>
+
+    <section class="notes_container flex flex-col justify-start items-center">
+
+
+
+    </section>
+
+    <section class="open_form w-1/2 h-1/2 flex justify-center items-center"><i class="fa-solid fa-file-pen"
+            onclick="openForm()"></i></section>
+
+    <section class="input_form hidden flex flex-col items-center gap-10">
+        <div class="input_holder flex justify-center items-center"><textarea id="input_space"
+                placeholder="type here..."></textarea></div>
+        <div class="selection_container flex justify-center items-center gap-20 p-2">
+            <div class="priority_selection flex flex-col justify-between items-start gap-5 p-2">
+                <div><label class="font-bold">Priority:</label></div>
+                <div class="hidden text-red-500 error_priority">Please select a priority for this note!</div>
+                <div class="flex flex-col">
+                    <div><input type="radio" id="priority1" name="priority" value="not important"
+                            onclick="retrieveInputRadio(this)">
+                        <label for="priority1">not important</label>
+                    </div>
+
+                    <div><input type="radio" id="priority2" name="priority" value="low importance"
+                            onclick="retrieveInputRadio(this)">
+                        <label for="priority2">low importance</label>
+                    </div>
+
+                    <div><input type="radio" id="priority3" name="priority" value="important"
+                            onclick="retrieveInputRadio(this)">
+                        <label for="priority3">important</label>
+                    </div>
+
+                    <div><input type="radio" id="priority4" name="priority" value="very important"
+                            onclick="retrieveInputRadio(this)">
+                        <label for="priority4">very important</label>
+                    </div>
+
+                    <div><input type="radio" id="priority5" name="priority" value="absolutely important"
+                            onclick="retrieveInputRadio(this)">
+                        <label for="priority5">absolutely important</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="category_selection flex flex-col justify-between items-start gap-5 p-2">
+                <div><label for="categorySelector" class="font-bold">Categories:</label></div>
+                <div class="hidden text-red-500 error_category">Please select a category for this note!</div>
+
+                <select id="categorySelector" name="category">
+                    <option value="0">Select a category</option>
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="school">School</option>
+                </select>
+
+            </div>
+        </div>
+
+        <div class="input-form-buttons flex justify-center items-center gap-10">
+            <button class="flex justify-center items-center add_note" type="button" onclick="handleSubmit()">Add
+                note</button>
+            <div class="flex justify-end items-center w-1/2"><button class="flex justify-center items-center close_form"
+                    type="button" onclick="closeForm()">Close</button></div>
+        </div>
+    </section>
+
+
 </body>
+
+
+<script>
+    //ask for input
+    //select priority,categry..
+    //check for validate inout
+    //press on add note
+    //push note to array notes[] which is an array of bjects
+    //updateui
+
+    let allNotes = [];
+
+    // id: "1", profile: "images/profile.png", username: "user", content: "//content goes here", priority: "", category: ""
+
+    let notesContainer = document.querySelector(".notes_container");
+
+    function updateNoteContainerUI() {
+        notesContainer.innerHTML = "";
+        allNotes.forEach(function (oneNote) {
+            let noteHTML = generateNoteHTML(oneNote);
+            notesContainer.innerHTML += noteHTML;
+        });
+    }
+
+
+
+    function generateNoteHTML(oneNote) {
+        return `
+        <div class="note_element relative flex flex-col p-2">
+            <div class="user flex justify-start gap-10 mb-2 items-center">
+                <div class="profile flex justify-center items-center"><img src="${oneNote.profile}" alt="profilePic">
+                </div>
+                <div class="username flex justify-center items-center">${oneNote.username}</div>
+            </div>
+            <div class="note_content ">${oneNote.content}</div>
+            <div class="close_note absolute flex justify-center items-center" ><i class="fa-solid fa-xmark" data-id="${oneNote.id}" onclick="removeNote(this)"></i></div>
+        </div>
+        
+        `;
+    }
+    // text input (note content)
+
+    let inputTextElement = document.querySelector("#input_space");
+    inputTextElement.addEventListener("input", retrieveInputText);
+    let inputTextValue;
+    function retrieveInputText() {
+        inputTextValue = inputTextElement.value;
+        // console.log(inputTextValue);
+        return inputTextValue;
+    }
+
+    // radio input (note priority)
+
+    let radioInputs = document.querySelectorAll('input[type="radio"]');
+
+    // Add event listener to each radio input
+    // radioInputs.forEach(function (radioInput) {
+    //     radioInput.addEventListener('change',function(){
+    //         if (radioInput.checked) {
+    //             let priorityValue = radioInput.value;
+    //             console.log("Selected Priority:", priorityValue);
+    //         }
+    //     });
+    // });
+
+    let priorityValue = 0;
+    function retrieveInputRadio(radioInput) {
+        if (radioInput.checked) {
+            priorityValue = radioInput.value;
+            console.log("Selected Priority:", priorityValue);
+            return priorityValue;
+        }
+    }
+
+
+
+    //selector input (note category)
+
+    let categorySelector = document.querySelector("#categorySelector");
+    let selectedCategory = 0;
+    function retrieveInputCategory() {
+        selectedCategory = categorySelector.value;
+        console.log("Selected Category:", selectedCategory);
+        return selectedCategory;
+    }
+
+    categorySelector.addEventListener("change", retrieveInputCategory);
+
+    //checking validation
+    function handleSubmit() {
+        let allInputsValid = true;
+
+        if (!validText()) {
+            allInputsValid = false;
+        }
+        if (!validPriority()) {
+            allInputsValid = false;
+        }
+        if (!validCategory()) {
+            allInputsValid = false;
+        }
+
+        if (allInputsValid) {
+            addNote();
+        }
+        //validate all input
+        //submit if all inputs are valid
+    }
+
+    function validText() {
+        inputTextValue = inputTextElement.value;
+        if (!inputTextValue) {
+            inputTextElement.placeholder = "Error: Input cannot be empty!";
+            inputTextElement.classList.add('error');
+            return false;
+        }
+        inputTextElement.placeholder = "Type here...";
+        inputTextElement.classList.remove('error');
+        return true;
+    }
+
+
+
+    function validPriority() {
+        if (priorityValue === 0) {
+            document.querySelector(".error_priority").classList.remove("hidden");
+            return false;
+        }
+        document.querySelector(".error_priority").classList.add("hidden");
+        return true;
+    }
+
+    function validCategory() {
+        if (selectedCategory === 0) {
+            document.querySelector(".error_category").classList.remove("hidden");
+            return false;
+        }
+        document.querySelector(".error_category").classList.add("hidden");
+        return true;
+    }
+
+    let nextNoteId = 1;
+    function addNote() {
+
+        let newNote = {
+            id: nextNoteId,
+            profile: "images/profile.png",
+            username: "user",
+            content: inputTextValue,
+            priority: priorityValue,
+            category: selectedCategory
+        };
+        allNotes.push(newNote);
+        console.log(allNotes);
+        nextNoteId++;
+        document.getElementById('input_space').value = '';
+        inputTextValue = "";
+        selectedCategory = 0;
+        priorityValue = 0;
+        updateNoteContainerUI();
+
+    }
+
+    //remove note
+
+    function removeNote(iconElement) {
+        const noteIdToRemove = parseInt(iconElement.getAttribute("data-id"));
+        allNotes = allNotes.filter((note) => note.id !== noteIdToRemove);
+        updateNoteContainerUI();
+    }
+
+
+
+    function closeForm() {
+        document.querySelector(".input_form").classList.add("hidden");
+        document.querySelector(".open_form").classList.remove("hidden");
+
+    }
+
+    function openForm() {
+        document.querySelector(".input_form").classList.remove("hidden");
+        document.querySelector(".open_form").classList.add("hidden");
+    }
+</script>
+
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    body {
+        display: flex;
+        gap: 50px;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 50px;
+        width: 100vw;
+        height: 100vh;
+        background-color: beige;
+    }
+
+    .notes_container {
+        gap: 20px;
+        width: 45%;
+        min-width: 500px;
+        height: 600px;
+        padding: 20px;
+        box-shadow: 0px 4px 4px grey;
+        overflow: hidden;
+        overflow-y: scroll;
+    }
+
+    .input_form {
+        overflow: hidden;
+        width: 45%;
+        min-width: 500px;
+        height: 600px;
+        padding: 10px;
+        background-color: rgb(203, 202, 202);
+        box-shadow: 0px 4px 4px grey;
+
+    }
+
+
+    .input_holder {
+        height: 50%;
+        width: 100%;
+        flex-grow: 1;
+
+
+    }
+
+    .selection_container {
+        height: 50%;
+        width: 100%;
+        box-shadow: 4px 4px 4px grey;
+        background-color: rgb(226, 226, 226);
+        position: sticky;
+
+
+
+    }
+
+    #input_space {
+        background-color: beige;
+        border: none;
+        border-radius: none;
+        box-shadow: 4px 4px 4px grey;
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+        max-height: 230px;
+    }
+
+    input[type="radio"] {
+        /* Set the width and height */
+        width: 15px;
+        height: 15px;
+        border: 1px solid rgb(102, 49, 137);
+        border-radius: 50%;
+
+    }
+
+    #categorySelector {
+        border-radius: 8px;
+        height: 30px;
+        width: 80%;
+    }
+
+    .priority_selection {
+        width: 40%;
+    }
+
+    .category_selection {
+        width: 40%;
+    }
+
+
+    .input-form-buttons {
+        height: 10%;
+        width: 100%;
+        position: sticky;
+
+    }
+
+    .add_note {
+        border: none;
+        background-color: rgb(150, 158, 190);
+        width: 30%;
+        height: 35px;
+        font-size: 15px;
+        font-weight: 700;
+        color: rgb(42, 42, 41);
+    }
+
+    .close_form {
+        border: none;
+        background-color: rgb(195, 138, 111);
+        width: 20%;
+        height: 40px;
+        font-size: 15px;
+        font-weight: 700;
+        color: rgb(42, 42, 41);
+    }
+
+    .fa-file-pen {
+        font-size: 4rem;
+    }
+
+    .note_element {
+        background-color: rgb(226, 226, 226);
+        width: 100%;
+        height: auto;
+        padding-top: 10px;
+
+    }
+
+    .profile {
+        overflow: hidden;
+        width: 50px;
+        height: 50px;
+        border-radius: 50px;
+    }
+
+    .close_note {
+        top: 2px;
+        right: 2px;
+        height: 20px;
+        width: 20px;
+        padding: 2px;
+        cursor: pointer;
+        background-color: rgb(255, 255, 255);
+    }
+
+    .error::placeholder {
+        color: red;
+    }
+</style>
+
+
 </html>
