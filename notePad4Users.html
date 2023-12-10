@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" />
+    <script src="https://kit.fontawesome.com/96bf16ca2d.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <title>notes</title>
+</head>
+
+<body class="relative">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        body {
+            display: flex;
+            gap: 50px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 50px;
+            width: 100vw;
+            height: 100vh;
+            background-color: beige;
+        }
+
+        .notes_section {
+            gap: 20px;
+            width: 45%;
+            min-width: 500px;
+            height: 650px;
+            padding: 10px;
+            box-shadow: 0px 4px 4px grey;
+            border-radius: 8px;
+            overflow: hidden;
+            overflow-y: scroll;
+        }
+
+        .input_form {
+            overflow: hidden;
+            width: 45%;
+            min-width: 500px;
+            height: 650px;
+            padding: 10px;
+            background-color: #FFF78A;
+            box-shadow: 0px 4px 4px grey;
+            border-radius: 8px;
+
+        }
+
+
+        .input_holder {
+            height: 50%;
+            width: 100%;
+            flex-grow: 1;
+
+
+        }
+
+        .selection_container {
+            height: 50%;
+            width: 100%;
+            box-shadow: 4px 4px 4px grey;
+            background-color: #FFE382;
+            border-radius: 8px;
+            position: sticky;
+
+
+
+        }
+
+        #input_space {
+            background-color: beige;
+            border-radius: 8px;
+            border: none;
+            border-radius: none;
+            box-shadow: 4px 4px 4px grey;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            max-height: 230px;
+        }
+
+        input[type="radio"] {
+            /* Set the width and height */
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+
+        }
+
+        #categorySelector {
+            border-radius: 8px;
+            height: 30px;
+            width: 80%;
+        }
+
+        .priority_selection {
+            width: 40%;
+        }
+
+        .category_selection {
+            width: 40%;
+        }
+
+
+        .input-form-buttons {
+            height: 10%;
+            width: 100%;
+            position: sticky;
+            border-radius: 8px;
+
+        }
+
+        .add_note {
+            border: none;
+            border-radius: 8px;
+            background-color: #FFC47E;
+            height: 35px;
+            font-size: 15px;
+            font-weight: 700;
+            color: rgb(42, 42, 41);
+        }
+
+        .sign_in {
+            border: none;
+            border-radius: 8px;
+            background-color: #357500;
+            height: 35px;
+            width: 100px;
+            font-size: 15px;
+            font-weight: 700;
+            color: rgb(42, 42, 41);
+        }
+
+        .close_form {
+            border: none;
+            border-radius: 8px;
+            background-color: #FFAD84;
+            height: 35px;
+            font-size: 15px;
+            font-weight: 700;
+            color: rgb(42, 42, 41);
+        }
+
+        .fa-file-pen {
+            font-size: 4rem;
+        }
+
+        .note_element {
+            background-color: rgb(226, 226, 226);
+            width: 100%;
+            height: auto;
+            padding-top: 10px;
+
+        }
+
+        .profile {
+            overflow: hidden;
+            width: 50px;
+            height: 50px;
+            border-radius: 50px;
+        }
+
+        .close_note {
+            top: 2px;
+            right: 2px;
+            height: 20px;
+            width: 20px;
+            padding: 2px;
+            cursor: pointer;
+            background-color: rgb(255, 255, 255);
+        }
+
+        .error::placeholder {
+            color: red;
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal_content {
+            background-color: #fefefe;
+            border-radius: 8px;
+            padding: 20px;
+            width: 50%;
+            height: auto;
+        }
+
+        .avatar img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+
+        }
+
+        .selected-avatar {
+            border: 4px solid #00ff00;
+        }
+    </style>
+
+    <section class="notes_section flex flex-col justify-start items-center relative">
+
+        <div class="flex justify-center items-start">
+            <h1 class="text-xl font-bold">Notes</h1>
+            <div class="absolute top-2 right-4"><label for="categoryFilter" class="text-l">filter:</label>
+                <select id="categoryFilter" name="category-filter" onchange="filter()">
+                    <option value="">All</option>
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="school">School</option>
+                </select>
+            </div>
+            <div class="absolute top-2 left-4"><i class="fa-solid fa-up-long cursor-pointer" style="color: #5d596c;"
+                    onclick="sortNotesAsc()"></i></div>
+            <div class="absolute top-2 left-14"><i class="fa-solid fa-down-long cursor-pointer" style="color: #5d596c;"
+                    onclick="sortNotesDesc()"></i></div>
+        </div>
+        <div class="notes_container flex flex-col gap-5 w-full"></div>
+
+    </section>
+
+    <section class="open_form w-1/2 h-1/2 flex justify-center items-center"><i class="fa-solid fa-file-pen"
+            onclick="openForm()" style="color: #5d596c;"></i></section>
+
+    <section class="input_form hidden flex flex-col items-center gap-10">
+        <div class="input_holder flex justify-center items-center"><textarea id="input_space"
+                placeholder="type here..."></textarea>
+            <p id="text-area-error" class="hidden text-red-500">Please add some content!</p>
+        </div>
+        <div class="selection_container flex justify-center items-center gap-20 p-2">
+            <div class="priority_selection flex flex-col justify-between items-start gap-5 p-2">
+                <div><label class="font-bold">Priority:</label></div>
+                <div class="hidden text-red-500 error_priority">Please select a priority for this note!</div>
+                <div class="flex flex-col">
+                    <div><input type="radio" id="priority1" name="priority" value="1">
+                        <label for="priority1">not important</label>
+                    </div>
+
+                    <div><input type="radio" id="priority2" name="priority" value="2">
+                        <label for="priority2">low importance</label>
+                    </div>
+
+                    <div><input type="radio" id="priority3" name="priority" value="3">
+                        <label for="priority3">important</label>
+                    </div>
+
+                    <div><input type="radio" id="priority4" name="priority" value="4">
+                        <label for="priority4">very important</label>
+                    </div>
+
+                    <div><input type="radio" id="priority5" name="priority" value="5">
+                        <label for="priority5">absolutely important</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="category_selection flex flex-col justify-between items-start gap-5 p-2">
+                <div><label for="categorySelector" class="font-bold">Categories:</label></div>
+                <div class="hidden text-red-500 error_category">Please select a category for this note!</div>
+
+                <select id="categorySelector" name="category">
+                    <option value="0">Select a category</option>
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="school">School</option>
+                </select>
+
+            </div>
+        </div>
+
+        <div class="input-form-buttons flex justify-center items-center gap-10">
+            <div><button class="flex justify-center items-center add_note w-20" type="button" onclick="addNote()">Add
+                    note</button></div>
+            <div><button class="flex justify-center items-center close_form w-20" type="button"
+                    onclick="closeForm()">Close</button></div>
+            <div class="flex gap-2 justify-center items-center"><i class="fa-solid fa-user"
+                    onclick="openAvatarModal()"></i>
+                <p class="usernameHTML"></p>
+            </div>
+        </div>
+    </section>
+
+    <div id="avatarModal" class="modal flex flex-col justify-center items-center">
+        <div class="flex flex-col modal_content gap-10 ">
+            <h2 class="text-center">Enter username and Select an avatar</h2>
+            <div class="usernameEntry w-full"><textarea id="username_entry" placeholder="username here..."
+                    class="w-full"></textarea></div>
+            <div class="avatar_pictures flex justify-between">
+                <div
+                    class="avatar text-center cursor-pointer flex flex-col justify-center items-center overflow-hidden">
+                    <img src="images/rawane.png" alt="User 1" data-user="rawane" onclick="selectAvatar(this)">
+                </div>
+                <div
+                    class="avatar text-center cursor-pointer flex flex-col justify-center items-center overflow-hidden">
+                    <img src="images/nassim.png" alt="User 2" data-user="nassim" onclick="selectAvatar(this)">
+                </div>
+                <div
+                    class="avatar text-center cursor-pointer flex flex-col justify-center items-center overflow-hidden">
+                    <img src="images/khaled.png" alt="User 3" data-user="khaled" onclick="selectAvatar(this)">
+                </div>
+            </div>
+            <div><button type="button" class="sign_in" onclick="signIn()">sign in</button></div>
+
+        </div>
+    </div>
+
+
+
+    <script>
+        let categoryToClassesMap = {
+            home: "bg-green-200",
+            work: "bg-red-200",
+            school: "bg-yellow-200"
+        }
+
+        let notesContainer = document.querySelector('.notes_container');
+        let notes = localStorage.getItem('notes') ? JSON.parse(localStorage.getItem('notes')) : [];
+
+        function closeForm() {
+            document.querySelector(".input_form").classList.add("hidden");
+            document.querySelector(".open_form").classList.remove("hidden");
+
+        }
+
+        function openForm() {
+            document.querySelector(".input_form").classList.remove("hidden");
+            document.querySelector(".open_form").classList.add("hidden");
+        }
+
+        updateNotesArray(notes)
+
+        function updateUINotesContainer(notesToDisplay = null) {
+            notesToDisplay = notesToDisplay || notes
+            notesContainer.innerHTML = ''
+            notesToDisplay.forEach(function (noteItem) {
+                let noteHTML = generatNoteHTML(noteItem);
+                notesContainer.innerHTML += noteHTML;
+            });
+        }
+
+
+
+        function generatNoteHTML(noteItem) {
+            return `
+        <div class="w-full flex items-center gap-5 p-2 rounded-md ${categoryToClassesMap[noteItem.category]} relative">
+            <div class="user flex flex-col justify-start gap-2 items-center">
+                <div class="profile flex justify-center items-center"><img src="${noteItem.profile}" alt="profilePic"></div>
+                <div class="username flex justify-center items-center">${noteItem.username}</div>
+            </div>
+            <p>${noteItem.content}</p>
+            <div class="absolute top-4 right-4 flex justify-center items-center cursor-pointer"><i class="fa-solid fa-trash" onclick="deleteNote('${noteItem.id}')"></i></div>
+            <div class="absolute top-4 right-10 flex justify-center items-center cursor-pointer"><i class="fa-solid fa-pen-to-square" onclick="editNote('${noteItem.id}')" style="color:#c73333"></i></div>
+        </div>
+        `;
+        }
+
+        function deleteNote(noteID) {
+            let newNotes = notes.filter(function (note) {
+                // if same ID that we want to delete, return false
+                if (noteID === note.id) {
+                    return false;
+                } else {
+                    return true;
+                }
+            })
+            updateNotesArray(newNotes);
+        }
+
+        let textAreaInput = document.querySelector('#input_space')
+        let textAreaInputError = document.querySelector('#text-area-error')
+
+        let categoryInput = document.querySelector('#categorySelector')
+        let categoryInputError = document.querySelector('.error_category')
+
+        let user;
+        let profilePicture;
+        function addNote() {
+            let contentValid = validateTextAreaInput();
+            let priorityValid = validatePriorityInput();
+            let categoryValid = validateCategoryInput();
+            // validate user inputs
+            if (contentValid && priorityValid && categoryValid) {
+                let priorityInputValue = document.querySelector('input[name="priority"]:checked').value
+                let newNote = {
+                    id: noteBeingEdited?.id ? noteBeingEdited.id : generateNoteID(), //if else
+
+                };
+                newNote.content = textAreaInput.value
+                newNote['priority'] = priorityInputValue
+                newNote['category'] = categoryInput.value
+                newNote.profile = `images/${profilePicture}.png`,
+                    newNote.username = user
+
+                // push to notes array
+                updateNotesArray([...notes, newNote]);
+                populateFormInputs();
+            }
+
+        }
+
+        function generateNoteID() {
+            // We can use Math.random()
+            return Date.now().toString();
+        }
+
+        function validateTextAreaInput() {
+            if (!textAreaInput.value) {
+                textAreaInputError.classList.remove('hidden')
+                return false;
+            }
+            textAreaInputError.classList.add('hidden')
+            return true;
+        }
+
+        //  function validText() {
+        //     inputTextValue = inputTextElement.value;
+        //     if (!inputTextValue) {
+        //         inputTextElement.placeholder = "Error: Input cannot be empty!";
+        //         inputTextElement.classList.add('error');
+        //         return false;
+        //     }
+        //     inputTextElement.placeholder = "Type here...";
+        //     inputTextElement.classList.remove('error');
+        //     return true;
+        // }
+
+        function validatePriorityInput() {
+            let priorityInputValue = document.querySelector('input[name="priority"]:checked')?.value
+            let priorityInputError = document.querySelector('.error_priority')
+            if (!priorityInputValue) {
+                priorityInputError.classList.remove('hidden')
+                return false;
+            }
+            priorityInputError.classList.add('hidden')
+            return true;
+        }
+
+        function validateCategoryInput() {
+            if (!categoryInput.value) {
+                categoryInputError.classList.remove('hidden')
+                return false;
+            }
+            categoryInputError.classList.add('hidden')
+            return true;
+        }
+
+
+        let noteBeingEdited;
+        function editNote(noteID) {
+            // get note
+            noteBeingEdited = notes.find(function (note) {
+                return noteID === note.id
+            })
+            if (!noteBeingEdited) {
+                return;
+            }
+
+            // remove from notes array
+            deleteNote(noteID)
+
+            // populate in inputs
+            populateFormInputs(noteBeingEdited)
+        }
+
+
+
+        function populateFormInputs(noteObject = {}) {
+            // content
+            textAreaInput.value = noteObject.content || '';
+            // priority
+            // document.querySelectorAll('input[type=radio]')[4].value
+            document.querySelectorAll('input[name="priority"]').forEach(function (radioInput) {
+                if (radioInput.value == noteObject.priority) {
+                    radioInput.checked = true;
+                } else {
+                    radioInput.checked = false;
+                }
+            })
+
+            // category
+            categoryInput.value = noteObject.category || ''
+
+        }
+
+        function updateNotesArray(notesArray = []) {
+            notes = notesArray;
+            localStorage.setItem('notes', JSON.stringify(notes))
+            // reflect changes to UI
+            // never call outside of this function
+            updateUINotesContainer();
+        }
+
+        function sortNotesAsc() {
+            let sortedNotesArray = notes.sort(function (a, b) { return a.priority - b.priority });
+            updateNotesArray(sortedNotesArray);
+        }
+        function sortNotesDesc() {
+            let sortedNotesArray = notes.sort(function (a, b) { return b.priority - a.priority });
+            updateNotesArray(sortedNotesArray);
+        }
+
+
+        let categoryFilter = document.querySelector('#categoryFilter');
+        function filter() {
+            let filteredArray = notes.filter(function (noteItem) {
+                if (!this.event.target.value || noteItem.category == this.event.target.value) {
+                    return true;
+                }
+                return false;
+            })
+
+            updateUINotesContainer(filteredArray)
+        }
+
+
+        // let avatars = [
+        //     { username: "Rawan", profile: "images/rawane.png", id: "1" },
+        //     { username: "Nassim", profile: "images/nassim.png", id: "2" },
+        //     { username: "Khaled", profile: "images/khaled.png", id: "3" }
+        // ]
+
+        // function selectAvatar(data) {
+        //     currentAvatar = avatars.filter(function (avatar) {
+        //         if (avatar.id !== slectedUserId) { return false; }
+        //         return true;
+        //     })
+        //     currentProfile = currentAvatar.profile
+        //     currentUsername = currentAvatar.username
+
+        // }
+
+        let UserNameTextarea = document.querySelector("#username_entry");
+
+        function openAvatarModal() {
+            let modal = document.getElementById('avatarModal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeAvatarModal() {
+            let modal = document.getElementById('avatarModal');
+            modal.classList.add('hidden');
+        }
+
+        function selectAvatar(clickedImage) {
+            // Remove the green border from all avatars
+            document.querySelectorAll('.avatar').forEach(function (avatar) {
+                avatar.classList.remove('selected-avatar');
+            });
+
+            // Add a green border to the clicked avatar
+            const clickedAvatar = clickedImage.closest('.avatar');
+            clickedAvatar.classList.add('selected-avatar');
+
+            profilePicture = clickedImage.getAttribute('data-user')
+
+        }
+
+        function signIn() {
+            user = UserNameTextarea.value;
+            document.querySelector(".usernameHTML").innerHTML = user;
+            closeAvatarModal();
+        }
+
+
+
+
+
+
+    </script>
+
+
+</body>
+
+
+</html>
